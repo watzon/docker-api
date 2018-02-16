@@ -5,15 +5,18 @@ require "http"
 
 require "./core_ext/**"
 require "./docker/version"
+require "./docker/info"
 require "./docker/util"
 require "./docker/exception"
 require "./docker/connection"
 require "./docker/base"
-require "./docker/types/*"
 require "./docker/container"
 
 # TODO: Write documentation for `Docker::Api`
 module Docker
+
+  VERSION = "0.1.0"
+  API_VERSION = "1.24"
 
   Logger = ::Logger.new(STDOUT)
   Logger.level = ::Logger::INFO
@@ -97,13 +100,13 @@ module Docker
   # Get the version of Go, Docker, and optionally the Git commit.
   def self.version(connection = self.connection)
     response = connection.get("/version")
-    Docker::Types::Version.from_json(response.body)
+    Docker::Version.from_json(response.body)
   end
 
   # Get more information about the Docker server.
   def self.info(connection = self.connection)
     response = connection.get("/info")
-    Docker::Types::Info.from_json(response.body)
+    Docker::Info.from_json(response.body)
   end
 
   # Ping the Docker server.

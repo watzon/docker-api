@@ -1,4 +1,4 @@
-module Docker::Types
+module Docker
   class Info
     JSON.mapping({
       architecture: {key: "Architecture", nilable: true, type: String},
