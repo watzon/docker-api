@@ -1,3 +1,5 @@
+require "json"
+
 module Docker
   class Service
 
@@ -42,7 +44,7 @@ module Docker
           class VolumeOptions
 
             JSON.mapping({
-              driver_config: { key: "DriverConfig", nilable: true, type: DriverConfig },
+              driver_config: { key: "DriverConfig", nilable: true, type: Hash(String, String) },
               labels: { key: "Labels", nilable: true, type: Hash(String, String) }
             })
 
@@ -73,7 +75,7 @@ module Docker
 
         JSON.mapping({
           limits: { key: "Limits", nilable: true, type: Limits },
-          reservations: { key: "Reservations", nilable: true, type: Reservations }
+          reservations: { key: "Reservations", nilable: true, type: Limits }
         })
 
         class Limits
@@ -146,3 +148,83 @@ module Docker
 
   end
 end
+
+service = Docker::Service.from_json(<<-JSON
+{
+  "Name": "web",
+  "TaskTemplate": {
+    "ContainerSpec": {
+      "Image": "nginx:alpine",
+      "Mounts": [
+        {
+          "ReadOnly": true,
+          "Source": "web-data",
+          "Target": "/usr/share/nginx/html",
+          "Type": "volume",
+          "VolumeOptions": {
+            "DriverConfig": {
+            },
+            "Labels": {
+              "com.example.something": "something-value"
+            }
+          }
+        }
+      ],
+      "User": "33"
+    },
+    "Networks": [
+        {
+          "Target": "overlay1"
+        }
+    ],
+    "LogDriver": {
+      "Name": "json-file",
+      "Options": {
+        "max-file": "3",
+        "max-size": "10M"
+      }
+    },
+    "Placement": {
+      "Constraints": [
+        "node.role == worker"
+      ]
+    },
+    "Resources": {
+      "Limits": {
+        "MemoryBytes": 104857600
+      },
+      "Reservations": {
+      }
+    },
+    "RestartPolicy": {
+      "Condition": "on-failure",
+      "Delay": 10000000000,
+      "MaxAttempts": 10
+    }
+  },
+  "Mode": {
+    "Replicated": {
+      "Replicas": 4
+    }
+  },
+  "UpdateConfig": {
+    "Delay": 30000000000,
+    "Parallelism": 2,
+    "FailureAction": "pause"
+  },
+  "EndpointSpec": {
+    "Ports": [
+      {
+        "Protocol": "tcp",
+        "PublishedPort": 8080,
+        "TargetPort": 80
+      }
+    ]
+  },
+  "Labels": {
+    "foo": "bar"
+  }
+}
+JSON)
+
+p service
