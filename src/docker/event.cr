@@ -17,7 +17,12 @@ module Docker
     Util.initializer_for({{PROPERTIES}})
 
     def self.stream(opts = {} of String => String, conn = Docker.connection)
-      conn.get("/events")
+      query = "?" + HTTP::Params.encode(opts) unless opts.empty?
+      conn.get("/events" + query.to_s)
+    end
+
+    def self.since(since, opts = {} of String => String, conn = Docker.connection, &block)
+      stream(opts.merge({ "since" => since }), conn)
     end
 
     # Represents the actor object nested within an event

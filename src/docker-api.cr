@@ -9,8 +9,10 @@ require "./docker/info"
 require "./docker/util"
 require "./docker/exception"
 require "./docker/connection"
-require "./docker/base"
 require "./docker/container"
+require "./docker/event"
+require "./docker/exec"
+require "./docker/image"
 
 # TODO: Write documentation for `Docker::Api`
 module Docker
@@ -27,6 +29,8 @@ module Docker
   @@connection : Docker::Connection?
   @@url : String?
   @@options : (Hash(String, Bool | String) | Hash(String, String))?
+
+  property creds : String
 
   def self.default_socket_url
     "unix:///var/run/docker.sock"
@@ -113,4 +117,18 @@ module Docker
   def self.ping(connection = self.connection)
     connection.get("/_ping")
   end
+
+  def self.authenticate!(options = {} of String => String, connection = self.connection)
+    creds = options.to_json
+    connection.post("/auth", body: creds)
+    @@creds = creds
+    true
+  end
 end
+
+p Docker::Util.build_auth_header({
+  "serveraddress" => "test.com",
+  "username" => "watzon",
+  "password" => "password",
+  "email" => "chris@watzon.me"
+})

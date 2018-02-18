@@ -2,6 +2,39 @@ module Docker
   class Container
     include Docker::Exception
 
+    macro make_initializer(properties)
+      {% for key, value in properties %}
+        {% properties[key] = {type: value} unless value.is_a?(NamedTupleLiteral) %}
+      {% end %}
+
+
+      {% for key, value in properties %}
+        {% if value[:mustbe] || value[:mustbe] == false %}
+          @{{key.id}} : {{value[:type]}}
+        {% end %}
+      {% end %}
+      def initialize(
+        conn : Docker::Connection,
+        {% for key, value in properties %}
+          {% if !value[:nilable] && !value[:mustbe] && value[:mustbe] != false %}
+            @{{key.id}} : {{ (value[:nilable] ? "#{value[:type]}? = nil, " : "#{value[:type]},").id }}
+          {% end %}
+        {% end %}
+        {% for key, value in properties %}
+          {% if value[:nilable] && !value[:mustbe] && value[:mustbe] != false %}
+            @{{key.id}} : {{ (value[:nilable] ? "#{value[:type]}? = nil, " : "#{value[:type]},").id }}
+          {% end %}
+        {% end %}
+        )
+        @connection = conn
+        {% for key, value in properties %}
+          {% if value[:mustbe] || value[:mustbe] == false %}
+            @{{key.id}} = {{value[:mustbe]}}
+          {% end %}
+        {% end %}
+      end
+    end
+
     @connection : Docker::Connection = Docker.connection
     @info : Hash(String, JSON::Type)? = nil
 
@@ -26,9 +59,7 @@ module Docker
 
     JSON.mapping({{PROPERTIES}})
 
-    def initialize(@id : String, @connection : Docker::Connection = Docker.connection)
-
-    end
+    make_initializer({{PROPERTIES}})
 
     # Update the info hash, which is the only mutable state in this object.
     #   e.g. if you would like a live status from the #info hash, call #refresh! first.
@@ -294,8 +325,8 @@ module Docker
     # Create a new Container.
     def self.create(name = nil, opts = {} of String => String, conn = Docker.connection)
       query = "?" + HTTP::Params.encode({ name: name }) unless name.nil?
-      creator = Container::Creator.new(**opts)
-      response = conn.post("/containers/create" + query.to_s, body: creator.to_json)
+      config = Container::Config.new(**opts)
+      response = conn.post("/containers/create" + query.to_s, body: config.to_json)
       Docker::Container.from_json(response.body)
     end
 
@@ -338,7 +369,7 @@ module Docker
       )
     end
 
-    class Creator
+    class Config
 
       PROPERTIES = {
         hostname: { key: "Hostname", nilable: true, type: String },

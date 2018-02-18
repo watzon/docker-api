@@ -44,12 +44,15 @@ p container.info # => { "Names" => ["some-redis"], "Image" => "redis", ... }
 
 - [x] API Connector
 - [x] Containers
-- [ ] Events
-- [ ] Exec
-- [ ] Image
+- [x] Events
+- [ ] Images
 - [ ] Messages
-- [ ] Network
-- [ ] Volume
+- [ ] Networks
+- [ ] Volumes
+- [ ] Services
+- [ ] Nodes
+- [ ] Swarm
+- [ ] Tasks
 
 ### Hangups
 

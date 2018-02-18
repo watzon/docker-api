@@ -7,12 +7,15 @@ module Docker
 
     @url : URI
     @ssl_context : OpenSSL::SSL::Context?
+    @timeout : Int32? = nil
 
     delegate :get, :post, :put, :patch, :head, to: client
 
     getter url        : URI
     setter verify_tls : Bool?
     setter cert_path  : String?
+
+    property timeout  : Int32?
 
     def initialize(
       @raw_url : String = ENV.fetch("DOCKER_URL", ENV.fetch("DOCKER_HOST", DEFAULT_URL)),
@@ -35,6 +38,8 @@ module Docker
       else
         client = HTTP::Client.new(@url.host.not_nil!, @url.port.not_nil!, false)
       end
+
+      client.timeout = @timeout unless @timeout.nil?
 
       client.before_request do |request|
         request.headers["Content-Type"] = request.body ? "application/json" : "text/plain"
