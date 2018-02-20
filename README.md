@@ -53,6 +53,7 @@ p container.info # => { "Names" => ["some-redis"], "Image" => "redis", ... }
 - [ ] Nodes
 - [ ] Swarm
 - [ ] Tasks
+- [ ] Plugins
 
 ### Hangups
 
