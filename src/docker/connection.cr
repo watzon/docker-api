@@ -39,7 +39,7 @@ module Docker
         client = HTTP::Client.new(@url.host.not_nil!, @url.port.not_nil!, false)
       end
 
-      client.timeout = @timeout unless @timeout.nil?
+      client.connect_timeout= @timeout.as(Number) unless @timeout.nil?
 
       client.before_request do |request|
         request.headers["Content-Type"] = request.body ? "application/json" : "text/plain"
