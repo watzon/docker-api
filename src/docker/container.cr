@@ -36,7 +36,7 @@ module Docker
     end
 
     @connection : Docker::Connection = Docker.connection
-    @info : Hash(String, JSON::Type)? = nil
+    @info : Hash(String, JSON::Any)? = nil
 
     property :connection, :info
 
