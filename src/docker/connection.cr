@@ -9,7 +9,7 @@ module Docker
     @ssl_context : OpenSSL::SSL::Context?
     @timeout : Int32? = nil
 
-    delegate :get, :post, :put, :patch, :head, to: client
+    delegate :get, :post, :put, :patch, :head, :delete, to: client
 
     getter url        : URI
     setter verify_tls : Bool?
